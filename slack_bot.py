@@ -30,6 +30,9 @@ def _load_cached_frameworks():
 
 
 def post_digest(frameworks: str):
+    # Persist + load frameworks FIRST, so suggestions work even if posting to
+    # the channel below fails (e.g. #hector-headlines missing, or the bot isn't
+    # a member). A posting failure must not look like a digest failure.
     set_frameworks(frameworks)
     today = date.today().strftime("%B %#d, %Y")
     text = (
@@ -40,7 +43,13 @@ def post_digest(frameworks: str):
         f"_Headline feedback: `@Hector feedback: [headline] — [reason]`_\n"
         f"_Category feedback: `@Hector category: [story] — should be EVERGREEN not AUTHORITY`_"
     )
-    app.client.chat_postMessage(channel="#hector-headlines", text=text)
+    try:
+        app.client.chat_postMessage(channel="#hector-headlines", text=text)
+    except Exception:
+        logging.exception(
+            "Could not post digest to #hector-headlines "
+            "(frameworks are still cached, so suggestions keep working)."
+        )
 
 
 def _parse_feedback(text: str):

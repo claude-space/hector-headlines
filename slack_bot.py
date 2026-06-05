@@ -1,6 +1,7 @@
 import re
 import logging
 from datetime import date
+from pathlib import Path
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from config import SLACK_BOT_TOKEN, SLACK_APP_TOKEN
@@ -12,11 +13,20 @@ logging.basicConfig(level=logging.INFO)
 app = App(token=SLACK_BOT_TOKEN)
 
 _current_frameworks: str = ""
+FRAMEWORKS_CACHE = Path(__file__).parent / "frameworks_cache.txt"
 
 
 def set_frameworks(frameworks: str):
     global _current_frameworks
     _current_frameworks = frameworks
+    FRAMEWORKS_CACHE.write_text(frameworks, encoding="utf-8")
+
+
+def _load_cached_frameworks():
+    global _current_frameworks
+    if FRAMEWORKS_CACHE.exists():
+        _current_frameworks = FRAMEWORKS_CACHE.read_text(encoding="utf-8")
+        logging.info("Loaded frameworks from cache.")
 
 
 def post_digest(frameworks: str):
@@ -96,5 +106,6 @@ def handle_mention(event, say):
 
 
 def start():
+    _load_cached_frameworks()
     handler = SocketModeHandler(app, SLACK_APP_TOKEN)
     handler.start()

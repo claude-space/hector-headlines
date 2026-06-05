@@ -34,8 +34,8 @@ if __name__ == "__main__":
         run_digest()
     else:
         if not FRAMEWORKS_CACHE.exists():
-            print("No cached frameworks — running digest now...")
-            threading.Thread(target=run_digest, daemon=True).start()
+            print("No cached frameworks — running digest now (bot will start when ready)...")
+            run_digest()
         else:
             print("Cached frameworks loaded — skipping startup digest.")
 

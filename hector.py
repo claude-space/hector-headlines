@@ -4,7 +4,7 @@ import time
 from config import DIGEST_HOUR
 from bigquery_client import fetch_headlines
 from analyzer import get_frameworks
-from slack_bot import post_digest, start as start_slack
+from slack_bot import post_digest, start as start_slack, FRAMEWORKS_CACHE
 
 
 def run_digest():
@@ -33,9 +33,11 @@ if __name__ == "__main__":
         # Run the digest immediately (useful for testing)
         run_digest()
     else:
-        # Run digest once on startup so frameworks are loaded, then schedule
-        print("Running initial digest on startup...")
-        threading.Thread(target=run_digest, daemon=True).start()
+        if not FRAMEWORKS_CACHE.exists():
+            print("No cached frameworks — running digest now...")
+            threading.Thread(target=run_digest, daemon=True).start()
+        else:
+            print("Cached frameworks loaded — skipping startup digest.")
 
         # Start scheduler in background
         threading.Thread(target=scheduler_loop, daemon=True).start()

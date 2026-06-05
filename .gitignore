@@ -2,3 +2,4 @@
 feedback.json
 __pycache__/
 *.pyc
+hector-bq-key.json
